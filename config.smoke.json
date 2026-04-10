@@ -1,0 +1,79 @@
+{
+  "TARGET_ENV": "beta",
+  "environments": {
+    "beta": {
+      "canvas_base_url": "https://example.beta.instructure.com",
+      "sis_import_endpoint": "/api/v1/accounts/1/sis_imports",
+      "api_token_env_var": "CANVAS_BETA_TOKEN"
+    },
+    "production": {
+      "canvas_base_url": "https://example.instructure.com",
+      "sis_import_endpoint": "/api/v1/accounts/1/sis_imports",
+      "api_token_env_var": "CANVAS_PROD_TOKEN"
+    }
+  },
+  "paths": {
+    "input_dir": "./input",
+    "output_dir": "./output",
+    "logs_dir": "./logs",
+    "state_db": "./state/enrollment_state.db",
+    "admin_holds": "./input/admin_missing_user_holds.csv",
+    "proposed_deletions_report": "./output/proposed_deletions.csv"
+  },
+  "grace_period_days": 7,
+  "upload": {"enabled": false},
+  "enrollment_feed_loaders": [
+    {
+      "name": "bulk_sa",
+      "module": "loaders.bulk_sa",
+      "enabled": true,
+      "source_dir": "./input",
+      "file_pattern": "bulk_sa.csv"
+    },
+    {
+      "name": "faculty_additions",
+      "module": "loaders.manual",
+      "enabled": true,
+      "source_dir": "./input",
+      "file_pattern": "faculty_additions.csv"
+    }
+  ],
+  "roster_loaders": [
+    {
+      "name": "fyr_spring_2026",
+      "module": "loaders.fyr",
+      "enabled": true,
+      "source_dir": "./input",
+      "file_pattern": "fyr_*.csv",
+      "target_course": "Enrollment_Modules_First_Year_Students_Spring_2026",
+      "role": "student",
+      "eid_column": "eid"
+    }
+  ],
+  "cohort_loaders": [
+    {
+      "name": "online_training_2025",
+      "module": "loaders.cohort",
+      "enabled": true,
+      "year": 2025,
+      "source_dir": "./input",
+      "file_pattern": "ot_2025*.csv",
+      "target_course": "Online_Student_Training_2025",
+      "section_sis_id_template": "OST-{year}-SEC{n:02d}",
+      "section_name_template": "Online Student Training {year} - Section {n}",
+      "initial_sections": 4,
+      "section_cap": 3,
+      "role": "student",
+      "eid_column": "eid"
+    }
+  ],
+  "smtp": {
+    "host": "localhost",
+    "port": 25,
+    "use_tls": false,
+    "from_address": "test@example.com",
+    "to_addresses": ["admin@example.com"],
+    "password_env_var": "_UNSET_",
+    "subject_prefix": "[Smoke]"
+  }
+}

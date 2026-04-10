@@ -1,0 +1,142 @@
+{
+  "TARGET_ENV": "beta",
+
+  "environments": {
+    "beta": {
+      "canvas_base_url": "https://myschool.beta.instructure.com",
+      "sis_import_endpoint": "/api/v1/accounts/1/sis_imports",
+      "api_token_env_var": "CANVAS_BETA_TOKEN"
+    },
+    "production": {
+      "canvas_base_url": "https://myschool.instructure.com",
+      "sis_import_endpoint": "/api/v1/accounts/1/sis_imports",
+      "api_token_env_var": "CANVAS_PROD_TOKEN"
+    }
+  },
+
+  "paths": {
+    "input_dir":    "/data/sis_feeds",
+    "output_dir":   "./output",
+    "logs_dir":     "./logs",
+    "state_db":     "./state/enrollment_state.db",
+    "admin_holds":  "/data/sis_feeds/force_enrollment_change/admin_missing_user_holds.csv",
+    "proposed_deletions_report": "./output/proposed_deletions.csv"
+  },
+
+  "grace_period_days": 7,
+
+  "upload": {
+    "enabled": false,
+    "poll_until_done": true,
+    "poll_interval_seconds": 15,
+    "poll_timeout_seconds": 1800
+  },
+
+  "enrollment_feed_loaders": [
+    {
+      "name":          "bulk_sa",
+      "module":        "loaders.bulk_sa",
+      "enabled":       true,
+      "source_dir":    "/data/sis_feeds/bulk_enroll",
+      "file_pattern":  "bulk_sa.csv",
+      "max_age_hours": 48
+    },
+    {
+      "name":          "nrd",
+      "module":        "loaders.nrd",
+      "enabled":       true,
+      "source_dir":    "/data/sis_feeds/nrd",
+      "file_pattern":  "nrd*.csv",
+      "max_age_hours": 72
+    },
+    {
+      "name":          "faculty_additions",
+      "module":        "loaders.manual",
+      "enabled":       true,
+      "source_dir":    "/data/sis_feeds/force_enrollment_change",
+      "file_pattern":  "faculty_additions.csv"
+    }
+  ],
+
+  "roster_loaders": [
+    {
+      "name":          "fyr_spring_2026",
+      "module":        "loaders.fyr",
+      "enabled":       true,
+      "source_dir":    "/data/sis_feeds/fyr",
+      "file_pattern":  "fyr_spring2026*.csv",
+      "target_course": "Enrollment_Modules_First_Year_Students_Spring_2026",
+      "role":          "student",
+      "eid_column":    "eid"
+    },
+    {
+      "name":          "trn_spring_2026",
+      "module":        "loaders.trn",
+      "enabled":       true,
+      "source_dir":    "/data/sis_feeds/trn",
+      "file_pattern":  "trn_spring2026*.csv",
+      "target_course": "Enrollment_Modules_Training_Spring_2026",
+      "role":          "student",
+      "eid_column":    "eid"
+    }
+  ],
+
+  "cohort_loaders": [
+    {
+      "name":                    "online_training_2025",
+      "module":                  "loaders.cohort",
+      "enabled":                 true,
+      "year":                    2025,
+      "source_dir":              "/data/sis_feeds/online_training",
+      "file_pattern":            "ot_2025*.csv",
+      "target_course":           "Online_Student_Training_2025",
+      "section_sis_id_template": "OST-{year}-SEC{n:02d}",
+      "section_name_template":   "Online Student Training {year} — Section {n}",
+      "initial_sections":        14,
+      "section_cap":             350,
+      "role":                    "student",
+      "eid_column":              "eid"
+    },
+    {
+      "name":                    "online_training_2026",
+      "module":                  "loaders.cohort",
+      "enabled":                 true,
+      "year":                    2026,
+      "source_dir":              "/data/sis_feeds/online_training",
+      "file_pattern":            "ot_2026*.csv",
+      "target_course":           "Online_Student_Training_2026",
+      "section_sis_id_template": "OST-{year}-SEC{n:02d}",
+      "section_name_template":   "Online Student Training {year} — Section {n}",
+      "initial_sections":        14,
+      "section_cap":             350,
+      "role":                    "student",
+      "eid_column":              "eid"
+    },
+    {
+      "name":                    "wble_2025",
+      "module":                  "loaders.cohort",
+      "enabled":                 true,
+      "year":                    2025,
+      "source_dir":              "/data/sis_feeds/wble",
+      "file_pattern":            "wble_2025*.csv",
+      "target_course":           "Work_Based_Learning_Experience_2025",
+      "section_sis_id_template": "WBLE-{year}-SEC{n:02d}",
+      "section_name_template":   "Work-Based Learning Experience {year} — Section {n}",
+      "initial_sections":        10,
+      "section_cap":             350,
+      "role":                    "student",
+      "eid_column":              "eid"
+    }
+  ],
+
+  "smtp": {
+    "host":            "smtp.myschool.edu",
+    "port":            587,
+    "use_tls":         true,
+    "username":        "enrollment-engine@myschool.edu",
+    "password_env_var":"SMTP_PASSWORD",
+    "from_address":    "enrollment-engine@myschool.edu",
+    "to_addresses":    ["sis-admin@myschool.edu", "lms-team@myschool.edu"],
+    "subject_prefix":  "[Enrollment Engine]"
+  }
+}
